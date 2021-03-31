@@ -7,10 +7,14 @@ form_login_key = ["check", "login", "verify", "account", "logon", "signin", "den
 
 
 class Sniffer:
+	def __init__(self):
+		self.num = 0
 
 	def request(self, flow: http.HTTPFlow):
+		self.num = self.num + 1
+		ctx.log.info("We've seen %d flows" % self.num)
 		request = flow.request
-		print(request.headers)
+		#print(request.headers)
 		ctx.log.info(str(request.headers))
 		url = request.pretty_url
 		form_url = str(request.urlencoded_form)
@@ -33,3 +37,6 @@ class Sniffer:
 		header = str(request.headers)
 		#logging.info("url: %s \nheader: %s \nform: %s \nip_from: %s", url, header, url_form, _from)
 
+addons = [
+    Sniffer()
+]
