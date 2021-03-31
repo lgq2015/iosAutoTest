@@ -1,0 +1,17 @@
+1.Windows 安装pyenv
+pip install pyenv-win --target %USERPROFILE%/.pyenv
+
+2.添加环境变量
+
+变量名：PYENV
+变量值：C:\Users\Administrator\.pyenv\pyenv-win 这里填写你的pyenv路径
+ 
+添加到用户变量的PATH。
+%PYENV%\bin
+%PYENV%\shims
+
+3.测试pyenv命令
+pyenv install -l
+pyenv install 3.5.4
+
+https://github.com/pyenv-win/pyenv-win
