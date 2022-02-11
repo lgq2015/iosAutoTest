@@ -1,0 +1,34 @@
+tidevice是一个不依赖xcode启动WebDriverAgent完成设备连接的自动化工具，
+Windows也可以启动苹果上的WebDriverAgent
+
+tidevice安装
+pip3 install -U "tidevice[openssl]"   # Recommend
+
+tidevice用法（具体百度）
+tidevice version
+tidevice list
+tidevice applist
+tidevice wdaproxy -B com.facebook.WebDriverAgentRunner.xctrunner --port 8200（cmd下启动命令后，weditor就可以获取元素了）
+
+/*
+BundleID: com.facebook.WebDriverAgentRunner.wwy.xctrunner
+[:997] ProductVersion: 12.4.7
+[:999] DeviceIdentifier: 184ed2e8e26199478f1e7c70605121c457877165
+[:838] SignIdentity: 'Apple Development: 609223909@qq.com (TXV7CHSD37)'
+[:844] CFBundleExecutable: WebDriverAgentRunner-Runner
+[:915] Launch 'com.facebook.WebDriverAgentRunner.xctrunner' pid: 3060
+[:1048] Test runner ready detected
+[:1040] Start execute test plan with IDE version: 29
+[:951] WebDriverAgent start successfully
+*/
+
+WebDriverAgent安装需要苹果电脑，可以用研发开发者账号打包的机器安装
+参考https://confluence.startimes.me/pages/viewpage.action?pageId=93809772
+
+
+config目录 配置文件
+data目录，存放文件
+model目录，数据库操作类
+test目录，测试用例编写
+utils 公共包
+renner.py 启程启动
