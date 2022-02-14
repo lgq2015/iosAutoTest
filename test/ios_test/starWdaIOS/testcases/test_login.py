@@ -1,5 +1,7 @@
 import allure
 import pytest
+from pytest_assume.plugin import assume
+
 from test.ios_test.starWdaIOS.pages.LoginPage import LoginPage
 from utils.BaseReadConfig import ReadConfig
 from utils.BaseGlobalVar import GlobalVar
@@ -36,8 +38,25 @@ class TestLogin:
             initLogin.logger.i(self.device_id + ": " + "登录20010_点击SIGN IN-失败")
             assert 0 == 1
 
-    @allure.title("登录20011_手机账号登录操作")
+    @allure.title("登录20011_不存在的手机账号登录操作")
     @pytest.mark.run(order=20011)
+    @pytest.mark.login
+    @pytest.mark.smoke
+    def test_signin_phone_not_exist_login(self, initLogin):
+        output_data = initLogin.signin_phone_not_exist_login()
+        with assume:
+            assert output_data['phone_not_exits_tip'], '不存在的手机账号提示未通过'
+        with assume:
+            assert output_data['phone_not_exits_go_register'], '不存在的手机账号跳转去注册未通过'
+        if output_data['phone_not_exits_go_register']:
+            initLogin.logger.i(self.device_id + ": " + "登录20011_不存在的手机账号登录操作-成功")
+            assert 0 == 0
+        else:
+            initLogin.logger.i(self.device_id + ": " + "登录20011_不存在的手机账号登录操作-失败")
+            assert 0 == 1
+
+    @allure.title("登录20012_手机账号登录操作")
+    @pytest.mark.run(order=20012)
     @pytest.mark.login
     @pytest.mark.smoke
     @pytest.mark.flaky(reruns=1, reruns_delay=2)
@@ -45,27 +64,44 @@ class TestLogin:
         login_name_phone = rc.cf.get('Account', 'login_name_phone')
         password_phone = rc.cf.get('Account', 'password_phone')
         if initLogin.signin_phone_login(login_name_phone, password_phone):
-            initLogin.logger.i(self.device_id + ": " + "登录20011_手机账号登录操作-成功")
+            initLogin.logger.i(self.device_id + ": " + "登录20012_手机账号登录操作-成功")
             assert 0 == 0
         else:
-            initLogin.logger.i(self.device_id + ": " + "登录20011_手机账号登录操作-失败")
+            initLogin.logger.i(self.device_id + ": " + "登录20012_手机账号登录操作-失败")
             assert 0 == 1
 
-    @allure.title("登录20012_手机账号历史登录操作")
-    @pytest.mark.run(order=20012)
+    @allure.title("登录20013_手机账号历史登录操作")
+    @pytest.mark.run(order=20013)
     @pytest.mark.login
     @pytest.mark.smoke
     def test_signin_phone_history_login(self, initLogin):
         login_name_phone = rc.cf.get('Account', 'login_name_phone')
         if initLogin.signin_phone_history_login(login_name_phone):
-            initLogin.logger.i(self.device_id + ": " + "登录20012_手机账号历史登录操作-成功")
+            initLogin.logger.i(self.device_id + ": " + "登录20013_手机账号历史登录操作-成功")
             assert 0 == 0
         else:
-            initLogin.logger.i(self.device_id + ": " + "登录20012_手机账号历史登录操作-失败")
+            initLogin.logger.i(self.device_id + ": " + "登录20013_手机账号历史登录操作-失败")
             assert 0 == 1
 
-    @allure.title("登录20020_邮箱账号登录操作")
+    @allure.title("登录20020_不存在的邮箱账号登录操作")
     @pytest.mark.run(order=20020)
+    @pytest.mark.login
+    @pytest.mark.smoke
+    def test_signin_email_not_exist_login(self, initLogin):
+        output_data = initLogin.signin_email_not_exist_login()
+        with assume:
+            assert output_data['email_not_exits_tip'], '不存在的邮箱账号提示未通过'
+        with assume:
+            assert output_data['email_not_exits_go_register'], '不存在的邮箱账号跳转去注册未通过'
+        if output_data['email_not_exits_go_register']:
+            initLogin.logger.i(self.device_id + ": " + "登录20020_不存在的邮箱账号登录操作-成功")
+            assert 0 == 0
+        else:
+            initLogin.logger.i(self.device_id + ": " + "登录20020_不存在的邮箱账号登录操作-失败")
+            assert 0 == 1
+
+    @allure.title("登录20021_邮箱账号登录操作")
+    @pytest.mark.run(order=20021)
     @pytest.mark.login
     @pytest.mark.smoke
     @pytest.mark.flaky(reruns=1, reruns_delay=2)
@@ -73,23 +109,23 @@ class TestLogin:
         login_name_email = rc.cf.get('Account', 'login_name_email')
         password_email = rc.cf.get('Account', 'password_email')
         if initLogin.signin_email_login(login_name_email, password_email):
-            initLogin.logger.i(self.device_id + ": " + "登录2020_邮箱账号登录操作-成功")
+            initLogin.logger.i(self.device_id + ": " + "登录20021_邮箱账号登录操作-成功")
             assert 0 == 0
         else:
-            initLogin.logger.i(self.device_id + ": " + "登录2020_邮箱账号登录操作-失败")
+            initLogin.logger.i(self.device_id + ": " + "登录20021_邮箱账号登录操作-失败")
             assert 0 == 1
 
-    @allure.title("登录20021_邮箱账号历史登录操作")
-    @pytest.mark.run(order=20021)
+    @allure.title("登录20022_邮箱账号历史登录操作")
+    @pytest.mark.run(order=20022)
     @pytest.mark.login
     @pytest.mark.smoke
     def test_signin_email_history_login(self, initLogin):
         login_name_email = rc.cf.get('Account', 'login_name_email')
         if initLogin.signin_email_history_login(login_name_email):
-            initLogin.logger.i(self.device_id + ": " + "登录2021_邮箱账号历史登录操作-成功")
+            initLogin.logger.i(self.device_id + ": " + "登录20022_邮箱账号历史登录操作-成功")
             assert 0 == 0
         else:
-            initLogin.logger.i(self.device_id + ": " + "登录2021_邮箱账号历史登录操作-失败")
+            initLogin.logger.i(self.device_id + ": " + "登录20022_邮箱账号历史登录操作-失败")
             assert 0 == 1
 
     @allure.title("登录20050_账号退出操作")

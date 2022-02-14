@@ -10,30 +10,18 @@ import time
 rc = ReadConfig()
 
 # 页面元素 ---------------------------------
-pack_version = ReadConfig().get_apk_name('IOS_StarTimesOn')
-resource_id = pack_version + ":id/"
 dialog_confirm = "OK"
 register_mobile_area_tv = "ic_arrow"
-iv_area_name = resource_id + "iv_area_name"
-tv_next = resource_id + "tv_next"
-textinput_error = "The account exists. Sign in"
-iv_edit = resource_id + "iv_edit"
-tv_information = resource_id + "tv_information_email"
 tv_create_account = "No account？Register"
 tv_phone = "Phone Number"
 tv_email = "Email Address"
-et_custom_password = resource_id + "et_custom_password"
-btn_send_verify_code_register = "GET CODE"
-btn_send_email_code_register = "GET CODE"
-tv_error_hint = resource_id + "tv_error_hint"
-tv_register_check_next = "NEXT"
-tv_set_login_pwd_next = resource_id + "tv_set_login_pwd_next"
-tv_code_sent = resource_id + "tv_code_sent"
-til_country_code = resource_id + "til_country_code"
-tv_next = resource_id + "tv_next"
-tv_mailbox_name = resource_id + "tv_mailbox_name"
+get_code = "GET CODE"
 yan_zheng_ma = '//Window[1]/Other[1]/Other[1]/Other[1]/Other[1]/Other[1]/Other[1]/Other[1]/Other[1]/Other[1]/Other[3]/Other[2]'
 shouji_yan_zheng_ma = '//Window[1]/Other[1]/Other[1]/Other[1]/Other[1]/Other[1]/Other[1]/Other[1]/Other[1]/Other[1]/Other[3]/Other[3]'
+accout_exist = 'The account exists. Sign in'
+phone_send_success_tip = 'The verification code has been sent to your phone.'
+email_send_success_tip = 'The verification code has been sent to your email.'
+error_yzm_tip = 'This code you entered is incorrect. Please try again.'
 
 
 class RegisterPage(PublicWdaIOSPage):
@@ -44,7 +32,7 @@ class RegisterPage(PublicWdaIOSPage):
 
     # 手机注册
     def phone_register(self, register_phone, password_phone):
-        output_data = {'phone_exits': False, 'message_send': False, 'message_fault_valid': False,
+        output_data = {'phone_exits': False, 'message_send': False, 'message_fault_valid': False, 'tip_sign_in': False,
                        'message_right_valid': False, 'password_short_valid': False, 'password_long_valid': False,
                        'password_same_valid': False, 'password_pass': False, 'register_pass': False}
         self.login.signin_entry()
@@ -54,31 +42,40 @@ class RegisterPage(PublicWdaIOSPage):
         self.click_exists(2, name=register_mobile_area_tv)  # 切换国家
         self.click_exists(5, label="Nigeria")  # 切换Niger
         self.click_exists(2, className="TextField")  # 点击手机号输入框
+        self.click_exists(2, label="Clear text")  # 先清空
         self.driver.send_keys(rc.cf.get('Account', 'login_name_phone'))  # 输入存在的手机号
-        self.click_exists(2, label=btn_send_verify_code_register)  # 点击发送验证码
+        self.click_exists(2, label=get_code)  # 点击发送验证码
         self.click_exists(2, label=dialog_confirm)  # 确认发送短信
         time.sleep(3)
         # 校验存在过的手机号
-        if self.exists(label='The account exists. Sign in'):
+        if self.exists(label=accout_exist):
             print("账号存在校验显示成功")
             output_data['phone_exits'] = True
+            self.click_offset(offset=(0.5, 0.5), label=accout_exist)  # 点击提示语里的Sign in
+            time.sleep(3)
+            if self.exists(label='Sign in by email'):
+                print("点击提示语里的Sign in进入登录页成功")
+                output_data['tip_sign_in'] = True
+                self.click(label='navi back')
         time.sleep(3)
         self.clear_text(className="TextField")  # 先清空内容
         self.driver.send_keys(register_phone)  # 输入没有注册过的手机号
-        self.click_exists(2, label=btn_send_verify_code_register)  # 点击发送验证码
+        self.click_exists(2, label=get_code)  # 点击发送验证码
         self.click_exists(2, label=dialog_confirm)  # 确认发送短信
-        time.sleep(8)
-        if self.exists(label='The verification code has been sent to your phone.'):
+        time.sleep(3)
+        if self.wait_exists(15, label=phone_send_success_tip):
             print("验证码发送成功")
             output_data['message_send'] = True
-            self.xpath_click_exists(2, xpath=shouji_yan_zheng_ma)
+            # self.xpath_click_exists(5, xpath=shouji_yan_zheng_ma)
+            self.click_outer_offset(offset=(30, -30), label=phone_send_success_tip)
             for shu in '0000':
                 self.click(label=shu)  # 输入错误验证码
             time.sleep(3)
-            if self.exists(label='This code you entered is incorrect. Please try again.'):
+            if self.exists(label=error_yzm_tip):
                 print("错误验证码校验成功")
                 output_data['message_fault_valid'] = True
-                self.xpath_click_exists(2, xpath=shouji_yan_zheng_ma)  # 点击验证码输入框
+                # self.xpath_click_exists(5, xpath=shouji_yan_zheng_ma)  # 点击验证码输入框
+                self.click_outer_offset(offset=(30, -30), label=error_yzm_tip)
                 for i in range(4):
                     self.click(label='Delete')  # 删除错误验证码
             time.sleep(3)
@@ -144,12 +141,14 @@ class RegisterPage(PublicWdaIOSPage):
     def email_register(self, register_email, password_email):
         output_data = {'email_suffix': False, 'email_exits': False, 'message_send': False, 'message_fault_valid': False,
                        'message_right_valid': False, 'password_short_valid': False, 'password_long_valid': False,
-                       'password_same_valid': False, 'password_pass': False, 'register_pass': False}
+                       'tip_sign_in': False, 'password_same_valid': False, 'password_pass': False,
+                       'register_pass': False}
         self.login.signin_entry()
         self.login.history_login(isRemove=True)
         self.click_offset(offset=(0.8, 0.5), label=tv_create_account)  # 点击注册 No account
         self.click_exists(2, label=tv_email)  # 点击邮箱注册
         self.click_exists(2, className="TextField")  # 点击邮箱输入框
+        self.click_exists(2, label="Clear text")  # 先清空
         suffix = "test001@"
         self.driver.send_keys(suffix)  # 输入未完整邮箱校验后缀
         time.sleep(3)
@@ -162,31 +161,39 @@ class RegisterPage(PublicWdaIOSPage):
         self.clear_text(className="TextField")  # 先清空内容
         email_exist = rc.cf.get('Account', 'login_name_email')
         self.driver.send_keys(email_exist)  # 输入存在的邮箱
-        self.click_exists(2, label=btn_send_email_code_register)  # 点击发送验证码
+        self.click_exists(2, label=get_code)  # 点击发送验证码
         self.click_exists(2, label=dialog_confirm)  # 确认发送短信
         time.sleep(3)
         # 校验存在过的邮箱
-        if self.exists(label='The account exists. Sign in'):
+        if self.exists(label=accout_exist):
             print("账号存在校验显示成功")
             output_data['email_exits'] = True
+            self.click_offset(offset=(0.4, 0.5), label=accout_exist)  # 点击提示语里的Sign in
+            time.sleep(3)
+            if self.exists(label='Sign in by phone'):
+                print("点击提示语里的Sign in进入登录页成功")
+                output_data['tip_sign_in'] = True
+                self.click(label='navi back')
         time.sleep(3)
         self.click_exists(2, className="TextField")  # 点击邮箱输入框
         self.click_exists(2, label="Clear text")
         self.driver.send_keys(register_email)  # 输入没有注册过的手机号
-        self.click_exists(2, label=btn_send_email_code_register)  # 点击发送验证码
+        self.click_exists(2, label=get_code)  # 点击发送验证码
         self.click_exists(2, label=dialog_confirm)  # 确认发送验证码
-        time.sleep(8)
-        if self.exists(label='The verification code has been sent to your email.'):
+        time.sleep(3)
+        if self.wait_exists(15, label=email_send_success_tip):
             print("验证码发送成功")
             output_data['message_send'] = True
-            self.xpath_click_exists(2, xpath=yan_zheng_ma)
+            # self.xpath_click_exists(2, xpath=yan_zheng_ma)
+            self.click_outer_offset(offset=(30, -30), label=email_send_success_tip)
             for shu in '0000':
                 self.click(label=shu)  # 输入错误验证码
             time.sleep(3)
-            if self.exists(label='This code you entered is incorrect. Please try again.'):
+            if self.exists(label=error_yzm_tip):
                 print("错误验证码校验成功")
                 output_data['message_fault_valid'] = True
-                self.xpath_click_exists(2, xpath=yan_zheng_ma)  # 点击验证码输入框
+                # self.xpath_click_exists(2, xpath=yan_zheng_ma)  # 点击验证码输入框
+                self.click_outer_offset(offset=(30, -30), label=error_yzm_tip)
                 for i in range(4):
                     self.click(label='Delete')  # 删除错误验证码
             time.sleep(3)
@@ -252,10 +259,10 @@ class RegisterPage(PublicWdaIOSPage):
 def run_case(device):
     d = Driver.init_ios_driver(device)
     registerPage = RegisterPage(d)
-    registerPage.email_register('test2022@test.com', '123456')
+    # registerPage.email_register('test2022@test.com', '123456')
     # RegisterModel().del_email_register('test2022@test.com')
-    # registerPage.phone_register('7017202201', '123456')
-    # RegisterModel().del_phone_register('7017202201')
+    registerPage.phone_register('7017202201', '123456')
+    RegisterModel().del_phone_register('7017202201')
 
 
 if __name__ == '__main__':

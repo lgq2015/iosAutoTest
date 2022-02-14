@@ -59,7 +59,7 @@ class BaseWdaIOSPage(object):
             while time.time() - start_time < timeout:
                 if self.exists(**kw):
                     return True
-                time.sleep(0.2)
+                time.sleep(0.5)
             return False
 
         result = wait_handle()
@@ -92,6 +92,15 @@ class BaseWdaIOSPage(object):
         xoff, yoff = offset
         x = lx + rx * xoff
         y = ly + ry * yoff
+        self.print('元素偏移后坐标 (%d,%d)' % (x, y))
+        self.driver.click(int(x), int(y))
+
+    def click_outer_offset(self, offset=(0, 0), **kw):
+        lx, ly, rx, ry = self.driver(**kw).bounds
+        self.print('元素坐标 (%d,%d)' % (lx, ly))
+        xoff, yoff = offset
+        x = lx + xoff
+        y = ly + yoff
         self.print('元素偏移后坐标 (%d,%d)' % (x, y))
         self.driver.click(int(x), int(y))
 

@@ -22,6 +22,7 @@ password_toggle = "register see"
 sign_in_phone_text = "Sign in by phone"
 sign_in_email_text = "Sign in by email"
 history_account = 'SIGN IN WITH "'
+account_exists = 'The account doesn.?t exist.  Register'
 
 
 class LoginPage(PublicWdaIOSPage):
@@ -62,7 +63,8 @@ class LoginPage(PublicWdaIOSPage):
         self.click_bottom_menu('me')
         if self.exists(label=tv_login) is False:
             self.logout()
-            if self.wait_exists(timeout=10, name="topBar_logo"):
+            # if self.wait_exists(timeout=10, name="topBar_logo"):
+            if self.wait_exists(timeout=10, label="Me"):
                 self.click_bottom_menu('me')
         self.click_gone(maxretry=3, label=tv_login)  # click一次点击有时候存在点不上的情况
         if self.exists(label="Terms of Service and Privacy Policy.") is True:
@@ -82,18 +84,48 @@ class LoginPage(PublicWdaIOSPage):
         if self.exists(label=password_toggle) is True:
             self.click(label=password_toggle)
             self.click(className="TextField")
-            self.driver.send_keys(password)
+            self.driver.send_keys('1234567')  # 输入错误的密码
 
         if self.info('enabled', label=tv_sign_in) is True:
             self.click(label=tv_sign_in)
             time.sleep(3)
             if self.exists(label=textinput_error):
                 self.clear_text(className="TextField")
-                self.set_text(text='1234567', className="TextField")
+                self.set_text(text=password, className="TextField")
                 self.click(label=tv_sign_in)
         time.sleep(3)
         self.window_close()
         self.click_bottom_menu('me')
+
+    # 手机账号不存在登录
+    def signin_phone_not_exist_login(self, login_phone_not_exist='7017222222'):
+        self.signin_entry()
+        self.history_login(isRemove=True)
+        # 点击sign in with startimes on account按钮
+        self.click_exists(2, label=bn_login)
+        self.click_exists(2, label=sign_in_phone_text)
+        self.click_exists(2, name=tv_area_name)
+        self.click_exists(5, label="Nigeria")
+
+        output_data = {'phone_not_exits_tip': False, 'phone_not_exits_go_register': False}
+
+        self.click(className="TextField")
+        self.click_exists(2, label="Clear text")
+        self.driver.send_keys(login_phone_not_exist)  # 输入不存在的手机账号
+        if self.info('enabled', label=tv_next) is True:
+            self.click(label=tv_next)
+        time.sleep(3)
+        if self.exists(nameMatches=account_exists):  # 里面有单引号 报错 \' 这么写也不行
+            self.print('输入不存在的手机账号 校验成功')
+            output_data['phone_not_exits_tip'] = True
+            self.click_offset(offset=(0.7, 0.5), nameMatches=account_exists)  # 点击提示语注册Register
+            time.sleep(3)
+            if self.exists(label='Enter your Phone Number'):
+                self.print('输入不存在的手机账号 点击提示语的Register跳转到手机注册页 校验成功')
+                output_data['phone_not_exits_go_register'] = True
+                self.click(label='navi back')
+        print(output_data)
+        return output_data
 
     # 手机登录
     def signin_phone_login(self, login_name_phone, password_phone):
@@ -120,6 +152,32 @@ class LoginPage(PublicWdaIOSPage):
             return True
         else:
             return False
+
+    # 邮箱账号不存在登录
+    def signin_email_not_exist_login(self, login_email_not_exist='test2222@test.com'):
+        self.signin_entry()
+        self.history_login(isRemove=True)
+        self.click_exists(2, label=bn_login)
+        self.click_exists(2, label=sign_in_email_text)
+
+        output_data = {'email_not_exits_tip': False, 'email_not_exits_go_register': False}
+        self.click(className="TextField")
+        self.click_exists(2, label="Clear text")
+        self.driver.send_keys(login_email_not_exist)  # 输入不存在的手机账号
+        if self.info('enabled', label=tv_next) is True:
+            self.click(label=tv_next)
+        time.sleep(3)
+        if self.exists(nameMatches=account_exists):
+            self.print('输入不存在的邮箱账号 校验成功')
+            output_data['email_not_exits_tip'] = True
+            self.click_offset(offset=(0.5, 0.5), nameMatches=account_exists)  # 点击提示语注册Register
+            time.sleep(3)
+            if self.exists(label='Enter your email address'):
+                self.print('输入不存在的邮箱账号 点击提示语的Register跳转到邮箱注册页 校验成功')
+                output_data['email_not_exits_go_register'] = True
+                self.click(label='navi back')
+        print(output_data)
+        return output_data
 
     # 邮箱登录
     def signin_email_login(self, login_name_email, password_email):
@@ -150,10 +208,14 @@ class LoginPage(PublicWdaIOSPage):
 def run_case(device):
     d = Driver.init_ios_driver(device)
     loginPage = LoginPage(d)
-    # loginPage.signin_email_login('609223909@qq.com', '123456')
+
+    # loginPage.signin_phone_not_exist_login()
     # loginPage.signin_phone_login('7017888888', '123456')
-    loginPage.signin_email_history_login('609223909@qq.com')
     # loginPage.signin_phone_history_login('7017888888')
+    # loginPage.signin_email_not_exist_login()
+    # loginPage.signin_email_login('609223909@qq.com', '123456')
+    # loginPage.signin_email_history_login('609223909@qq.com')
+
     # loginPage.logout()
     # loginPage.signin_entry()
 

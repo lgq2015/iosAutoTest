@@ -31,6 +31,7 @@ class TestRegister:
         password_phone = rc.cf.get('Account', 'register_password_phone')
         output_data = initRegister.phone_register(register_phone, password_phone)
         pytest.assume(True, output_data['phone_exits'])
+        pytest.assume(True, output_data['tip_sign_in'])
         with assume:  # 两种写法使用上下文管理器的好处是不用显示去try和finally捕获异常
             assert output_data['message_send'], '手机验证码发送失败'
         with assume:
@@ -64,6 +65,7 @@ class TestRegister:
         output_data = initRegister.email_register(register_email, password_email)
         pytest.assume(True, output_data['email_suffix'])
         pytest.assume(True, output_data['email_exits'])
+        pytest.assume(True, output_data['tip_sign_in'])
         pytest.assume(True, output_data['message_send'])
         pytest.assume(True, output_data['message_fault_valid'])
         pytest.assume(True, output_data['message_right_valid'])
